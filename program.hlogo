@@ -1,9 +1,13 @@
-REPEAT 2 {
-    FD 90
-    RT 90
+REPEAT 10 {
+    FD 40
+    RT 100
+    PU
+    FD 10
+    PD
 }
 
-REPEAT 2 {
-    FD 90
-    RT 90
+IF((1>0) and !(0<1)){
+    FD 40
+} ELSE {
+    FD 100
 }

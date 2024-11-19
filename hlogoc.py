@@ -31,14 +31,26 @@ high_logo_grammar = r"""
     // A HIgh-LOGO program consists of one or more basic instructions
     start: instruction+			
     
-    instruction: basic_instruction | repeat_instruction
+    instruction: basic_instruction | repeat_instruction | conditional_instruction
     
-    basic_instruction: INSTNAME INTNUM
+    basic_instruction: INSTNAME INTNUM | INSTNAME
     
     repeat_instruction: REPEAT INTNUM "{" basic_instruction+ "}"
+    
+    conditional_instruction: IF "(" condition ")" "{" instruction+ "}" ELSE "{" instruction+ "}"
 
+    condition: comparison | NOT condition | condition AND condition | condition OR condition | "(" condition ")" 
+
+    comparison: INTNUM CMP INTNUM
+
+    IF: "IF"
+    ELSE: "ELSE"
+    AND: "and"
+    OR: "or"
+    NOT: "!"
+    CMP: "==" | "!=" | "<" | ">" | "<=" | ">="
     REPEAT: "REPEAT"
-    INSTNAME: "FD" | "RT"
+    INSTNAME: "FD" | "RT" | "PU" | "PD" | "LT" | "WIDTH"
     INTNUM : /-?\d+(\.\d+)?([eE][+-]?\d+)?/
 
     %ignore /[ \t\n\f\r]+/
@@ -51,8 +63,8 @@ instructions = []
 # This function will traverse the AST and you can use it to emit the 
 # code you want at every node of it.
 def translate_program(ast, out):
-    global firstIteration
-    global length
+    global firstIteration,length
+    
     
     if firstIteration:
         
@@ -74,9 +86,8 @@ def translate_program(ast, out):
         out.write("turtle.mainloop() \n")       
         
     elif ast.data == "basic_instruction":
-        # This will be run when the node is a basic_instruction
-        [left, right] = ast.children
-        #out.write(left.data + " " + right.data)
+        left = ast.children[0]
+        right = ast.children[1] if len(ast.children) > 1 else None
         if left.value == "FD":
             out.write("t.forward(")
             out.write(right.value)
@@ -85,12 +96,28 @@ def translate_program(ast, out):
             out.write("t.right(")
             out.write(right.value)
             out.write(")\n")
+        if left.value == "PU":
+            out.write("t.penup()\n")
+        if left.value == "PD":
+            out.write("t.pendown()\n")
+        if left.value == "LT":
+            out.write("t.left(")
+            out.write(right.value)
+            out.write(")\n")
+        if left.value == "WIDTH":
+            out.write("t.width(")
+            out.write(right.value)
+            out.write(")\n")
     elif ast.data == "repeat_instruction":
         length = len(ast.children)
         out.write("for i in range("+ast.children[1]+"):\n")
         for i in range (2, length):
             out.write("\t")
             translate_program(ast.children[i], out)
+        
+    elif ast.data == "conditional_instruction":
+        print(ast.pretty())
+    
         
               
     else:
