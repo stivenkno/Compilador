@@ -28,64 +28,37 @@ if (len(sys.argv) != 2):
 # the web IDE. You can work on the grammar there if
 # you wish to and then paste it here.
 high_logo_grammar = r"""
-    // A HIgh-LOGO program consists of one or more basic instructions
-    start: instruction+			
-    
-    instruction: basic_instruction | repeat_instruction | conditional_instruction
-    
-    basic_instruction: INSTNAME INTNUM | INSTNAME
-    
-    repeat_instruction: REPEAT INTNUM "{" basic_instruction+ "}"
-    
-    conditional_instruction: IF "(" condition ")" "{" instruction+ "}" ELSE "{" instruction+ "}"
+    start: instruction+
 
-    condition: comparison | NOT condition | condition AND condition | condition OR condition | "(" condition ")" 
+    instruction: MOVEMENT [NUMBER]                                     -> movement
+               | "REPEAT" NUMBER code_block                            -> repeat
 
-    comparison: INTNUM CMP INTNUM
+    code_block: "{" instruction+ "}"
 
-    IF: "IF"
-    ELSE: "ELSE"
-    AND: "and"
-    OR: "or"
-    NOT: "!"
-    CMP: "==" | "!=" | "<" | ">" | "<=" | ">="
-    REPEAT: "REPEAT"
-    INSTNAME: "FD" | "RT" | "PU" | "PD" | "LT" | "WIDTH"
-    INTNUM : /-?\d+(\.\d+)?([eE][+-]?\d+)?/
+    MOVEMENT: "FD"|"BK"|"LT"|"RT"|"PD"|"PU" 
+    COLOR: LETTER+
 
-    %ignore /[ \t\n\f\r]+/
+    %import common.LETTER
+    %import common.INT -> NUMBER
+    %import common.WS
+    %ignore WS
 """
-
-firstIteration = True
-length = 0
-instructions = []
 
 # This function will traverse the AST and you can use it to emit the 
 # code you want at every node of it.
 def translate_program(ast, out):
-    global firstIteration,length
     
-    
-    if firstIteration:
-        
-        length = len(ast.children)
-        for i in range(0, length):
-            instructions.append(ast.children[i].children[0]) 
-        #print("Length is:", length)
-        firstIteration = False
-        #print(instructions)
-        
-    
-    # print("Tree node", ast
     if ast.data == "start":
         out.write("import turtle\n")
         out.write("t = turtle.Turtle()\n")
         # Call the method recursively to visit the children
-        for i in instructions:
+        for i in ast.children:
             translate_program(i, out)
-        out.write("turtle.mainloop() \n")       
-        
-    elif ast.data == "basic_instruction":
+        out.write("turtle.mainloop() \n")
+    elif ast.data == "instruction":
+        for i in ast.children:
+            translate_program(i, out)
+    elif ast.data == "movement":
         left = ast.children[0]
         right = ast.children[1] if len(ast.children) > 1 else None
         if left.value == "FD":
@@ -108,21 +81,19 @@ def translate_program(ast, out):
             out.write("t.width(")
             out.write(right.value)
             out.write(")\n")
-    elif ast.data == "repeat_instruction":
-        length = len(ast.children)
-        out.write("for i in range("+ast.children[1]+"):\n")
-        for i in range (2, length):
+    elif ast.data == "repeat":
+        count,block = ast.children
+        print(block)
+        out.write("for i in range(")
+        out.write(count.value)
+        out.write("):\n")
+        translate_program(block, out)
+    elif ast.data == "code_block":
+        for i in ast.children:
             out.write("\t")
-            translate_program(ast.children[i], out)
-        
-    elif ast.data == "conditional_instruction":
-        print(ast.pretty())
-    
-        
-              
-    else:
-        # No implementation fro the node was found
-        print("There is nothing to do for ast node ")
+            translate_program(i, out)
+    elif ast.data == "ifCondition":
+        print("condiciones")
 
 input = sys.argv[1]
 output = sys.argv[1] + str(".py")

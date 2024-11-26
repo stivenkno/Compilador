@@ -1,13 +1,11 @@
-REPEAT 10 {
-    FD 40
-    RT 100
-    PU
-    FD 10
-    PD
-}
-
-IF((1>0) and !(0<1)){
-    FD 40
-} ELSE {
+FD 50
+RT 90
+PD
+PU
+REPEAT 30 {
     FD 100
 }
+
+
+
+

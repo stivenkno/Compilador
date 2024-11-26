@@ -1,9 +1,9 @@
 import turtle
 t = turtle.Turtle()
-for i in range(10):
-	t.forward(40)
-	t.right(100)
-	t.penup()
-	t.forward(10)
-	t.pendown()
+t.forward(50)
+t.right(90)
+t.pendown()
+t.penup()
+for i in range(30):
+	t.forward(100)
 turtle.mainloop() 
