@@ -238,8 +238,8 @@ def translate_condition(ast, out):
 
 # This function will traverse the AST and you can use it to emit the
 # code you want at every node of it.
-def translate_program(ast, out, indent_level=0):
-    
+def translate_program(ast, out, indent_level=-1):
+
     indent = ' ' * (indent_level)  # 4 spaces per indentation level
     
     if ast.data == "start":

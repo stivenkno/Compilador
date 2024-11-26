@@ -5,11 +5,11 @@ REPEAT 6 {
     REPEAT 36 {
         FD 3
         RT 10
-        REPEAT 36 {
-        FD 3
-        RT 10
     }
+    IF ((5<9) and (7>5)){
+        RT 360
     }
     
 }
+
 
