@@ -1,13 +1,18 @@
-REPEAT 6 {
-    FD 100
-    RT 60
-    
-    REPEAT 36 {
-        FD 3
-        RT 10
-    }
-    IF (((5<9) and (7>5)) and (5<8)){
-        RT 360
-    }
-    
+REPEAT 10 {
+    FD 40
+    RT 100 
+    PU
+    FD 10
+    PD
+    REPEAT 10 {
+        FD 40
+        RT 100
+        PU
+        FD 10
+        PD
 }
+}
+
+IF((1>0) and (0<1)){
+    FD 40
+} 
