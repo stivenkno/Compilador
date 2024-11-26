@@ -5,6 +5,10 @@ REPEAT 6 {
     REPEAT 36 {
         FD 3
         RT 10
+        REPEAT 36 {
+        FD 3
+        RT 10
+    }
     }
     
 }
