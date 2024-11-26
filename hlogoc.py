@@ -1,5 +1,5 @@
 import sys
-from lark import Lark, tree, Transformer, v_args
+from lark import Lark, tree, Transformer, v_args,Tree,Token
 
 print(
     r'''
@@ -32,17 +32,55 @@ high_logo_grammar = r"""
 
     instruction: MOVEMENT [NUMBER]                                     -> movement
                | "REPEAT" NUMBER code_block                            -> repeat
+               | "IF" "(" condition ")" code_block ["ELSE" code_block] -> if
+    
+    condition: comparison | NOT condition | condition AND condition | condition OR condition | "(" condition ")" 
+
+    comparison: NUMBER CMP NUMBER
+
+    AND: "and"
+    OR: "or"
+    NOT: "!"
+    CMP: "==" | "!=" | "<" | ">" | "<=" | ">="
 
     code_block: "{" instruction+ "}"
 
     MOVEMENT: "FD"|"BK"|"LT"|"RT"|"PD"|"PU" 
-    COLOR: LETTER+
+
 
     %import common.LETTER
     %import common.INT -> NUMBER
     %import common.WS
     %ignore WS
 """
+
+def translate_condition(ast, out):
+    
+    print(ast)
+    
+    if isinstance(ast, Tree):
+            if ast.data == "condition":
+                for i in ast.children:
+                    translate_condition(i, out)
+            elif ast.data == "comparison":
+                left = ast.children[0]
+                right = ast.children[2]
+                out.write("(" + left.value)
+                out.write(ast.children[1].value)
+                out.write(right.value + ")")
+            elif ast.data == "NOT":
+                out.write(ast.children[1].value)
+            elif ast.data == "AND":
+                out.write(ast.children[0].value)
+                out.write(" and ")
+                out.write(ast.children[1].value)
+            elif ast.data == "OR":
+                out.write(ast.children[0].value)
+                out.write(" or ")
+                out.write(ast.children[1].value)
+    elif isinstance(ast, Token):
+        out.write(ast.value)
+    
 
 # This function will traverse the AST and you can use it to emit the 
 # code you want at every node of it.
@@ -83,7 +121,6 @@ def translate_program(ast, out):
             out.write(")\n")
     elif ast.data == "repeat":
         count,block = ast.children
-        print(block)
         out.write("for i in range(")
         out.write(count.value)
         out.write("):\n")
@@ -92,19 +129,27 @@ def translate_program(ast, out):
         for i in ast.children:
             out.write("\t")
             translate_program(i, out)
-    elif ast.data == "ifCondition":
-        print("condiciones")
+    elif ast.data == "if":
+        condition, block1, block2 = ast.children
+    
+        out.write("if (")
+        translate_condition(condition, out)
+        out.write("):\n")
+        translate_program(block1, out)
+        if block2:
+            out.write("else:\n")
+            translate_program(block2, out)
 
 input = sys.argv[1]
 output = sys.argv[1] + str(".py")
 print("Input file: ", input)
-parser = Lark(high_logo_grammar)
+parser = Lark(high_logo_grammar, start='start')
 
 with open(input) as inputFile:
     with open(output, 'w') as out:
         ast = parser.parse(inputFile.read())
-        #print(ast.pretty())
-        #tree.pydot__tree_to_png(ast, "tree.png")
+        print(ast.pretty())
+        tree.pydot__tree_to_png(ast, "tree.png")
         #tree.pydot__tree_to_dot(ast, "tree.dot", rankdir="TD")
         #print (ast)
         translate_program(ast, out)
