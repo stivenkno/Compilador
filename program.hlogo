@@ -1,6 +1,6 @@
 REPEAT 10 {
-    FD 40
-    RT 100 
+    FD 40 # IGNORA ESTO
+    #RT 100 
     PU
     FD 10
     PD

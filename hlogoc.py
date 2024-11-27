@@ -34,6 +34,7 @@ high_logo_grammar = r"""
     instruction: MOVEMENT [NUMBER]                                     -> movement
                | "REPEAT" NUMBER code_block                            -> repeat
                | "IF" "(" condition ")" code_block ["ELSE" code_block] -> if
+               
 
     condition: comparison 
               | NOT condition 
@@ -51,11 +52,17 @@ high_logo_grammar = r"""
     code_block: "{" instruction+ "}"
 
     MOVEMENT: "FD"|"BK"|"LT"|"RT"|"PD"|"PU"
+    COMMENT: "#" /[^\n]*/
+    MULTILINE_COMMENT: /\/\*(\*(?!\/)|[^*])*\*\//
+    
 
     %import common.LETTER
     %import common.INT -> NUMBER
     %import common.WS
     %ignore WS
+    %ignore COMMENT
+    %ignore MULTILINE_COMMENT
+    
 """
 
 def translate_condition(ast, out):
