@@ -1,18 +1,4 @@
-REPEAT 10 {
-    FD 40 # IGNORA ESTO
-    #RT 100 
-    PU
-    FD 10
-    PD
-    REPEAT 10 {
-        FD 40
-        RT 100
-        PU
-        FD 10
-        PD
+for i in range(0,100,2){
+    FD i
+    RT 90
 }
-}
-
-IF((1>0) and (0<1)){
-    FD 40
-} 
